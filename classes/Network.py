@@ -21,6 +21,7 @@ class Network:
                 j = end + 1
             ##to add convergence error stop
     
+    ##This method is used for the TRAIN action
     def predict(self, X, Y):
         output = self.forward_propagation(X)
         predicted = np.argmax(output)
@@ -29,13 +30,14 @@ class Network:
         else:
             return False
 
+    ##This method is used for the PREDICT action
     def make_prediction_for_dataset(self, input):
         predictions = np.zeros(len(input), dtype=int)
         for i, object in enumerate(input):
             predictions[i] = np.argmax(self.forward_propagation(object)) + 1
         return predictions
 
-    ##calculate average of loss over a batch            
+    ##calculate average of loss over a mini-batch and update weights using this average          
     def apply_error_correction(self, batchX, batchY):
         real_output = np.zeros((self.hyper_parameters.number_of_labels))
         real_output[batchY[0] - 1] = 1
@@ -63,12 +65,14 @@ class Network:
             b_errors.append(layer.b_error)
         return list(W_errors), list(b_errors)
 
+    ##Feed an input to the network and return the values of the output layer
     def forward_propagation(self, input):
         output = np.ndarray.copy(input)
         for layer in self.layers:
             output = layer.calculate_a(output)
         return output
 
+    ##Perform back-propagation using desired output and calculate errors for every layer linearly using a recurrence equation
     def backward_propagation(self, input, output):
         n = len(self.layers)
         last_layer = self.layers[n - 1]

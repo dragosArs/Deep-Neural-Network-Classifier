@@ -48,14 +48,13 @@ network_to_read_filename = predict_config["network_filename"]
 
 action = input("Please make your selection(train/predict):")
 if action == 'train':
-    #dataX = read_features("./data/features.txt")
     dataX = read_features(features_filename)
-    #dataY = read_labels("./data/targets.txt")
     dataY = read_labels(targets_filename)
     trainX, testX = split_dataset(dataX, input_size, 0.8)
     trainY, testY = split_dataset(dataY, input_size, 0.8)
     max_accuracy = 0
     rng = np.random.default_rng()
+    ##This loop is responsible with searching for optimized hyperparameters, more exactly the number of neurons in the hidden layers
     for i in range(0, hyperparameter_search_iterations):
         number_of_hidden_layers = rng.integers(1, 3)
         layer_breadth = []
@@ -64,6 +63,8 @@ if action == 'train':
         hyperparameters = Hyperparameters(step_size, layer_breadth, max_iter, convergence_error, batch_size, number_of_labels) 
         network = Network(hyperparameters, input_size, number_of_labels)
         avg_accuracy = 0
+        ##Instead of splitting the training set in 25% validation set and 75% training set, I cross validate using shuffling.
+        ##Because of that I can I use 5% of training set for validation, do it 5 times and average
         for j in range(0, 5):
             trainX, trainY = unison_shuffled_copies(trainX, trainY)
             actual_trainX, validationX = split_dataset(trainX, input_size, 0.95)
@@ -76,6 +77,7 @@ if action == 'train':
                     sum += 1
             avg_accuracy += sum / len(validationX)
         avg_accuracy /= 5 
+        ##if current network performs better than best found so far update the latter with the former
         if avg_accuracy > max_accuracy:
             max_accuracy = avg_accuracy
             best_network = network
